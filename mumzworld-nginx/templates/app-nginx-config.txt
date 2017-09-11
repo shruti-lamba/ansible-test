@@ -1,0 +1,266 @@
+#server {
+#    listen 80;
+#    server_name mumzworld.com;
+#    return  301 http://www.mumzworld.com$request_uri;
+
+
+    #Set real ips from Incapsula
+
+#    set_real_ip_from 199.83.128.0/21;
+
+ #   set_real_ip_from 198.143.32.0/19;
+
+  #  set_real_ip_from 149.126.72.0/21;
+
+#    set_real_ip_from 103.28.248.0/22;
+
+#    set_real_ip_from 45.64.64.0/22;
+
+#    set_real_ip_from 185.11.124.0/22;
+
+#    set_real_ip_from 192.230.64.0/18;
+
+#    set_real_ip_from 107.154.0.0/16;
+
+#    set_real_ip_from 2a02:e980::/29;
+
+#    real_ip_header X-Forwarded-For;
+
+#}
+
+server {
+    listen 80;
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-XSS-Protection "1; mode=block";
+    server_name {{ item.vhosts }};
+    client_max_body_size 1024M;
+    root {{ item.docroot }};
+    index index.php index.html index.htm;
+
+    rewrite_log on;
+
+    access_log /var/log/nginx/{{ item.vhosts }}-access.log;
+    error_log /var/log/nginx/{{ item.vhosts }}-error.log;
+
+    ### Fonts CORS
+    location ~* \.(ttf|ttc|otf|eot|woff|woff2|svg|)$ {
+        add_header Access-Control-Allow-Origin *;
+    }
+
+
+    # Protect folders
+    location /app/                       { deny all; }
+    location /includes/                  { deny all; }
+    location /lib/                       { deny all; }
+    location /media/downloadable/        { deny all; }
+    location /pkginfo/                   { deny all; }
+    location /report/config.xml          { deny all; }
+    location /var/                       { deny all; }
+    location /lib/minify/                { allow all; }
+    location /dev/                       { deny all; }
+
+    # Disable hidden files
+    location /. {
+            return 404;
+    }
+
+
+    # Deny PHP execution in these  folders
+    location ~ /var/(.+)\.php$ {
+        deny all;
+    }
+    
+    location ~ /media/(.+)\.php$ {
+        deny all;
+    }
+
+    location ~ /includes/(.+)\.php$ {
+        deny all;
+    }
+    
+    location ~ /lib/(.+)\.php$ {
+        deny all;
+    }
+    
+    location ~ /scripts/(.+)\.php$ {
+        deny all;
+    }
+
+    location = /apple-app-site-association {
+        default_type application/json;
+        expires    -1;
+    }
+
+    location ~ ^/en/brand/.+ {
+        rewrite ^/en/brand/(?:\d*\.)?\d+-([a-zA-Z0-9\-.&_]+\/?) http://www.mumzworld.com/en/$1 permanent;
+    }
+
+
+    location /reports/ {
+        if (!-e $request_filename) {
+            rewrite ^/(.*)$ /reports/index.php?/$1 last;
+            break;
+        }
+    }
+
+
+    ###
+    # Bad User Agents
+    ###
+
+    if ($http_user_agent ~* magespeedtest.com|AhrefsBot|Baiduspider|Jullo|LWP::Simple|BBBike|scrapbot|YandexBot|Zulu_1.0|Purebot|Lipperhey|newslebot|Java\/1.4.1_04) {
+        return 403;
+    }
+
+    # SSL detection
+    set $is_ssl "off";
+    if ($http_x_forwarded_proto = "https") {
+        set $is_ssl "on";
+    }
+
+    # Send images without cookies
+    location ~* "^.+\.(jpg|jpeg|gif|png|ico|css|js|txt|xml|svg|svgz|mp4|mp3|ogg|ogv|wav|swf)$" {
+        expires 30d;
+        add_header Cache-Control public;
+        fastcgi_hide_header Set-Cookie;
+    }
+
+    location / {
+        index index.php;
+        try_files $uri $uri/ @handler;
+    }
+
+    location ^~ /admin/ {
+        allow all;
+    }
+
+    #magmi password protect
+    location ^~ /mgconnect/ {
+        auth_basic "Magmi Restricted Access";
+        auth_basic_user_file /code/.htpasswd;
+
+        location ~ \.php$ {
+            include     /etc/nginx/fastcgi_params;
+            fastcgi_pass    127.0.0.1:9000;
+            fastcgi_index   index.php;
+            fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        }
+    }
+
+    #Downloader password protect
+    location ^~ /downloader/ {
+            auth_basic "Downloader Restricted Access";
+            auth_basic_user_file /code/.htpasswd;
+
+        location ~ \.php$ {
+            include     /etc/nginx/fastcgi_params;
+            fastcgi_pass    127.0.0.1:9000;
+            fastcgi_index   index.php;
+            fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        }
+    }
+
+    #shell folder password protect
+    location ^~ /shell/.* {
+        auth_basic "Mumzworld Restricted Access";
+        auth_basic_user_file /code/.htpasswd_shell;
+
+        location ~ \.php$ {
+            include     /etc/nginx/fastcgi_params;
+            fastcgi_pass    127.0.0.1:9000;
+            fastcgi_index   index.php;
+            fastcgi_param   SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        }
+    }
+
+    # Needed for Fooman Speedster
+    location /minify/ {
+        rewrite ^/minify/([0-9]+)(/.*\.(js|css))$ /lib/minify/m.php?f=$2&d=$1 last;
+    }
+
+    location @handler {
+        rewrite / /index.php;
+    }
+
+    location @no_category {
+        try_files $request_uri /notfound.php?uri=$request_uri;
+    }
+
+    location ~ .php/ {
+        rewrite ^(.*.php)/ $1 last;
+    }
+
+    location ~ .php$ {
+        if (!-e $request_filename) {
+            rewrite / /index.php last;
+        }
+
+        ## Do not cache dynamic content
+        expires -1;
+
+        fastcgi_max_temp_file_size 0;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param HTTPS $is_ssl;
+        fastcgi_intercept_errors        off;
+        #fastcgi_intercept_errors        on;
+        fastcgi_param   MAGE_RUN_TYPE   website;
+        fastcgi_param   MAGE_RUN_CODE   base;
+        fastcgi_param   APP_ENV development;
+        fastcgi_send_timeout 300s;
+        fastcgi_read_timeout 900s;
+        #fastcgi_ignore_client_abort     on;
+        fastcgi_buffers 256 256k;
+        fastcgi_buffer_size 256k;
+        fastcgi_busy_buffers_size 256k;
+        fastcgi_pass localhost:9000;
+        include        /etc/nginx/fastcgi_params;
+        fastcgi_param REMOTE_ADDR $http_x_forwarded_for;
+    }
+    
+    set $block_xss 0;
+    if ($query_string ~ "base64_(en|de)code\(.*\)") {
+        set $block_xss 1;
+    }
+
+    if ($request_uri ~ "base64_(en|de)code\(.*\)") {
+        set $block_xss 1;
+    }
+
+    if ($query_string ~ "(<|%3C).*script.*(>|%3E)") {
+        set $block_xss 1;
+    }
+
+    if ($request_uri ~ "(<|%3C).*script.*(>|%3E)") {
+        set $block_xss 1;
+    }
+
+    if ($query_string ~ "(<|%3C).*iframe.*(>|%3E)") {
+        set $block_xss 1;
+    }
+
+    if ($request_uri ~ "(<|%3C).*iframe.*(>|%3E)") {
+        set $block_xss 1;
+    }
+
+    if ($query_string ~ "GLOBALS(=|\[|\%[0-9A-Z]{0,2})") {
+        set $block_xss 1;
+    }
+
+    if ($query_string ~ "_REQUEST(=|\[|\%[0-9A-Z]{0,2})") {
+        set $block_xss 1;
+    }
+
+    if ($block_xss = 1) {
+        return 403;
+    }
+
+    # Monitoring tools
+ #   location /monitor/status {
+ #       if ($deny_access_amman) {
+ #               return 403;
+ #       }
+ #       stub_status on;
+ #   }
+
+}

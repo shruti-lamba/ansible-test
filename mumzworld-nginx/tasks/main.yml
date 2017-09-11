@@ -1,0 +1,32 @@
+---
+# tasks file for mumzworld-nginx
+- include_vars: ../../credentials.yml
+
+- name: apt-get update
+  apt: update_cache=true
+
+
+- name: Install nginx and git
+  apt: name={{ item }} state=present update_cache=true
+  sudo: yes
+  with_items:
+    - nginx
+    - git
+
+- name: template for virtualhost
+  template:
+     src: templates/app-nginx-config.txt
+     dest: /etc/nginx/sites-enabled/{{ item.vhosts }}.conf
+     backup: yes
+  with_items: "{{vhost_dict}}"
+
+- name: create doc_root folder
+  file:
+     path: "{{ doc_root }}"
+     state: directory
+     owner: www-data
+     group: www-data
+     mode: 0755
+  become: yes
+
+#- include: deploy.yml

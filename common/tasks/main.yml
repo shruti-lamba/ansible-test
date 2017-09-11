@@ -1,0 +1,62 @@
+---
+# Tasks file for common
+- include_vars: ../../credentials.yml
+
+- name: apt-get update
+  apt: update_cache=true
+
+- name: Install packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - build-essential
+    - whois
+    - vim
+    - unzip
+    - curl
+    - rsync
+    - wget
+    - sendmail
+    - git
+    - nfs-common
+
+- name: create user
+  user:
+    name: "{{ item.name }}"
+    shell: /bin/bash
+    password: no
+    state: present
+    createhome: yes
+  with_items: "{{ ssh_users }}"
+
+- name: Add ssh user keys
+  authorized_key: 
+    user: "{{ item.name }}"  
+    key: "{{ item.key }}" 
+    state: present
+  with_items: "{{ ssh_users }}"
+
+- name: Add www-data user
+  user:
+    name: "www-data"
+    shell: /bin/bash
+    password: no
+    state: present
+
+- name: Ensure www-data .ssh directory exists.
+  file: 
+    dest: "/var/www/.ssh"
+    mode: 0700 
+    owner: www-data
+    state: directory
+
+- name: Install ssh key
+  copy: 
+    content: "{{ id_rsa }}" 
+    dest: "/var/www/.ssh/id_rsa"
+    mode: 0600
+    owner: www-data
+
+- name: install datadog agent
+  shell: agent_install.sh
+  args:
+    chdir: /home/ubuntu

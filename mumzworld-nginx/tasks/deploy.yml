@@ -1,0 +1,21 @@
+---
+- name: git pull
+  git:
+    repo: "git@gitlab.mumzworld.com:mumzworld/main.git"
+    accept_hostkey: yes
+    dest: /var/www/websites
+    remote: origin
+    key_file: /var/www/.ssh/id_rsa
+  become: yes
+
+- name: copy local.xml
+  template:
+     src: templates/local.xml
+     dest: /var/www/websites/app/etc/local.xml
+     owner: www-data
+     group: www-data
+
+- name: reload nginx
+  service: name=nginx state=restarted
+  become: yes
+

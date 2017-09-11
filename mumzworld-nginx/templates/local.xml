@@ -1,0 +1,61 @@
+<config>
+    <global>
+        <install>
+            <date><![CDATA[Fri, 28 Jul 2017 16:00:00 +0000]]></date>
+        </install>
+<!---        <crypt>
+            <key>'{{'key'}}'</key>
+        </crypt>   -->
+        <disable_local_modules>false</disable_local_modules>
+        <resources>
+            <db>
+                <table_prefix><![CDATA[]]></table_prefix>
+            </db>
+            <default_setup>
+                <connection>
+                    <host>{{ mysql_host }}</host>
+                    <username>{{ user_name }}</username>
+                    <password>{{ password }}</password>
+                    <dbname>{{ db_name }}</dbname>
+                    <initStatements><![CDATA[SET NAMES utf8]]></initStatements>
+                    <model><![CDATA[mysql4]]></model>
+                    <type><![CDATA[pdo_mysql]]></type>
+                    <pdoType><![CDATA[]]></pdoType>
+                    <active>1</active>
+                </connection>
+            </default_setup>
+        </resources>
+	<!-- <session_save><![CDATA[files]]></session_save> -->
+        <session_save><![CDATA[memcache]]></session_save>    
+	<session_save_path><![CDATA[tcp://{{ memcache_ip }}:11211?persistent=0&weight=2&timeout=10&retry_interval=10]]></session_save_path>
+	<session_cache_limiter><![CDATA[public,must-revalidate]]></session_cache_limiter>
+  <cache>
+                <backend>Cm_Cache_Backend_Redis</backend>
+                        <backend_options>
+                        <server>{{ redis_ip }}</server>
+                        <port>6379</port>
+                        <persistent></persistent>
+                        <database>1</database>
+                        <password></password>
+                        <force_standalone>0</force_standalone>
+                        <connect_retries>1</connect_retries>
+                        <read_timeout>10</read_timeout>
+                        <automatic_cleaning_factor>0</automatic_cleaning_factor>
+                        <compress_data>1</compress_data>
+                        <compress_tags>1</compress_tags>
+                        <compress_threshold>20480</compress_threshold>
+                        <compression_lib>gzip</compression_lib>
+                </backend_options>
+        </cache>  
+  </global>
+    <admin>
+        <routers>
+            <adminhtml>
+                <args>
+                    <frontName><![CDATA[admin]]></frontName>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+</config>
+

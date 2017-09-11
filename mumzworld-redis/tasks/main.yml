@@ -1,0 +1,17 @@
+---
+# tasks file for mumzworld-redis
+- name: download redis
+  get_url:
+    url: http://download.redis.io/releases/redis-4.0.1.tar.gz
+    dest: /opt
+
+- name: untar redis
+  unarchive:
+    src: /opt/redis-4.0.1.tar.gz
+    dest: /opt
+    remote_src: True
+
+- name: run make command
+  make:
+    chdir: /opt/redis-4.0.1 
+    target: install

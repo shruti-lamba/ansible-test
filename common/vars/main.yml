@@ -1,0 +1,10 @@
+---
+# vars file for common
+ssh_users:
+  - name: tej
+    key: "{{ lookup('file', '../files/tej.pub') }}"
+
+  - name: admin
+    key: "{{ lookup('file', '../files/admin.pub') }}"
+
+doc_root: "/var/www/websites"
