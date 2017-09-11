@@ -3,5 +3,5 @@
   become: true
   connection: local
   roles:
-     - { role: mumzworld-nginx }
+     - { role: common }
      - { role: mumzworld-php }
