@@ -1,5 +1,5 @@
 ---
-- hosts: app_server
+- hosts: localhosts
   become: true
   roles:
      - { role: common }
