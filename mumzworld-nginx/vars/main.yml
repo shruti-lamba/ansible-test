@@ -4,4 +4,4 @@
 vhost_dict:
   - {vhosts: "test.mumzworld.com", docroot: "/code/mumzworld"}
 
-doc_root: /var/www/website
+doc_root: /code/mumzworld
