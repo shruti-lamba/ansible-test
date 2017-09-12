@@ -3,15 +3,16 @@
   git:
     repo: "git@gitlab.mumzworld.com:mumzworld/main.git"
     accept_hostkey: yes
-    dest: /var/www/websites
+    dest: /code/mumzworld
     remote: origin
-    key_file: /var/www/.ssh/id_rsa
+    version: cm_redissession_1121
+    key_file: /root/.ssh/id_rsa
   become: yes
 
 - name: copy local.xml
   template:
      src: templates/local.xml
-     dest: /var/www/websites/app/etc/local.xml
+     dest: /code/mumzworld/app/etc/local.xml
      owner: www-data
      group: www-data
 

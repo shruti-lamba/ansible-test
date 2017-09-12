@@ -1,5 +1,5 @@
 ---
-- hosts: localhosts
+- hosts: vagrant-box
   become: true
   roles:
      - { role: common }
