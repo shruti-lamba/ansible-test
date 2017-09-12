@@ -31,7 +31,7 @@
             <date><![CDATA[Fri, 28 Jul 2017 16:00:00 +0000]]></date>
         </install>
 <!---        <crypt>
-            <key>'{{'key'}}'</key>
+            <key>{{key}}</key>
         </crypt>   -->
         <disable_local_modules>false</disable_local_modules>
         <resources>
@@ -40,10 +40,10 @@
             </db>
             <default_setup>
                 <connection>
-                    <host>{{ db_host }}</host>
-                    <username>{{ db_user_name }}</username>
-                    <password>{{ db_password }}</password>
-                    <dbname>{{ db_name }}</dbname>
+                    <host><![CDATA[db.mumzworld.net]]></host>
+                    <username><![CDATA[mumzadmin]]></username>
+                    <password><![CDATA[igdefault]]></password>
+                    <dbname><![CDATA[mumzworld_prod]]></dbname>
                     <initStatements><![CDATA[SET NAMES utf8]]></initStatements>
                     <model><![CDATA[mysql4]]></model>
                     <type><![CDATA[pdo_mysql]]></type>
@@ -58,7 +58,7 @@
 	<session_cache_limiter><![CDATA[public,must-revalidate]]></session_cache_limiter> -->
    <session_save>db</session_save>
 <redis_session>                       <!-- All options seen here are the defaults -->
-            <host>{{ session_host_name }}</host>            <!-- Specify an absolute path if using a unix socket -->
+            <host>redis-session.mumzworld.net</host>            <!-- Specify an absolute path if using a unix socket -->
             <port>6389</port>
             <password></password>             <!-- Specify if your Redis server requires authentication -->
             <timeout>2.5</timeout>            <!-- This is the Redis connection timeout, not the locking timeout -->
@@ -81,7 +81,7 @@
   <cache>
                 <backend>Cm_Cache_Backend_Redis</backend>
                         <backend_options>
-                        <server>{{ cache_host_name }}</server>
+                        <server>redis-cache.mumzworld.net</server>
                         <port>6379</port>
                         <persistent></persistent>
                         <database>0</database>

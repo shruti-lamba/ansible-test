@@ -18,6 +18,26 @@
     - sendmail
     - git
     - nfs-common
+    - python-pip
+
+- name: install awscli
+  pip: name=awscli state=present
+
+- name: Ensure .aws directory exists.
+  file:
+    dest: "/root/.aws"
+    mode: 0644
+    owner: root
+    state: directory
+
+
+- name: add aws config
+  copy:
+    content: "{{ lookup('file', '../files/aws_config_file') }}"
+    dest: "/root/.aws/config"
+    mode: 0644
+    owner: root
+
 
 - name: create user
   user:
